@@ -1,0 +1,34 @@
+.select {
+   position: relative;
+   width: 300px;
+   margin: auto;
+}
+
+.select__input {
+   background-color: aquamarine;
+   padding: 10px;
+   
+   width: 100%;
+}
+
+.select__input > input {
+   background-color: transparent;
+   border: 0;
+   overflow: hidden;
+}
+
+.select__input > button {
+  float: right;
+}
+
+.select__options {
+   list-style: none;
+   position: absolute;
+   top: 50px;
+   right: 0;
+   left: 0;
+   background-color: thistle;
+   
+}
+
+ 
