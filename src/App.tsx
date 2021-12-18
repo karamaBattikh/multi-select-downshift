@@ -1,5 +1,6 @@
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, Controller } from "react-hook-form";
 
 import Select, { ItemType } from './component/select'
 
@@ -14,25 +15,44 @@ const list = [
   { label: "option06", value: "06" }
 ];
 
+const prepareData = (list: any[]): ItemType[] => list?.map((item: any) => ({ label: item?.label, value: item?.value })) || []
+
+type FormType = {
+  products: ItemType[]
+}
+
 function App() {
-  const [products, setProducts] = useState<ItemType[]>([]);
-  console.log("---products----", products);
+  const { handleSubmit, control } = useForm<FormType>({
+    defaultValues: {
+      products: [list[0], list[3]] || []
+    }
+  });
 
-  const itemToString = (item: ItemType) => (item ? item.label : "");
+  const itemToString = (item: ItemType) => (item ? item.value : "");
 
-  const handleChange = (selectedItems: ItemType[]) => {
-    console.log({ selectedItems });
-    setProducts(selectedItems);
-  };
+  const onSubmit = (values: FormType) => console.log('*-values-*', values);
 
   return (
     <div className="App">
-      <Select
-        items={list}
-        onChange={handleChange}
-        itemSelected={products || []}
-        itemToString={itemToString}
-      />
+      <form onSubmit={handleSubmit(onSubmit)}>
+
+        <Controller
+          name="products"
+          control={control}
+          defaultValue={[list[0], list[3]]}
+          render={
+            ({ field: { onChange, value } }) =>
+              <Select
+                items={prepareData(list) || []}
+                onChange={onChange}
+                itemSelected={prepareData(value) || []}
+                itemToString={itemToString}
+              />
+          }
+        />
+
+        <input type="submit" />
+      </form>
     </div>
   );
 }

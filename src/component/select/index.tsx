@@ -17,10 +17,10 @@ interface SelectProps {
 }
 
 
-const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: SelectProps) => {
+const Select = React.forwardRef(({ onChange, items, itemSelected = [], itemToString, ...rest }: SelectProps, ref) => {
   const [selectedItems, setSelectedItems] = useState<ItemType[]>(itemSelected || []);
 
-  const ref = useRef(null);
+  const inputRef = useRef(null);
 
 
   const getItems = (value: string) =>
@@ -30,7 +30,6 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
           selectedItems.indexOf(item) < 0 &&
           item?.label?.toLowerCase().startsWith(value.toLowerCase()),
       ) : items
-
 
   useEffect(() => {
     if (onChange && selectedItems) {
@@ -46,7 +45,7 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
           ...changes,
           highlightedIndex: state.highlightedIndex,
           isOpen: true,
-          inputValue: ""
+          inputValue: state?.inputValue
         };
       case Downshift.stateChangeTypes.blurInput:
         return { inputValue: "" }
@@ -56,17 +55,21 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
   };
 
   const removeItem = (item: ItemType) => {
-
-    setSelectedItems((prevState) => prevState.filter((i) => i !== item));
+    setSelectedItems((prevState) => prevState.filter((i) => i?.value !== item?.value));
   };
 
   const addSelectedItem = (item: ItemType) => {
-
     setSelectedItems((prevState) => [...prevState, item]);
   };
 
+  const includeItem = ({ list, value }: { list: ItemType[], value: string }) => {
+    const index = list.findIndex((elt: any) => elt?.value === value);
+    if (index < 0) return false;
+    return true
+  }
+
   const handleSelection = (selectedItem: any) => {
-    if (selectedItems.includes(selectedItem)) {
+    if (includeItem({ list: selectedItems, value: selectedItem?.value })) {
       removeItem(selectedItem);
     } else {
       addSelectedItem(selectedItem);
@@ -112,7 +115,7 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
               }}
             >
               <input
-                {...getInputProps({ ref: ref })}
+                {...getInputProps({ ref: inputRef })}
                 placeholder={
                   selectedItems && selectedItems.length < 1
                     ? "Select a value"
@@ -137,7 +140,7 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
                     className={clsx(
                       "option",
                       highlightedIndex === index && "option-active",
-                      selectedItems.includes(item) && "option-selected"
+                      includeItem({ list: selectedItems, value: item?.value }) && "option-selected"
                     )}
                     key={`option-${item.value}`}
                     {...getItemProps({ item, index })}
@@ -162,6 +165,6 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
       )}
     </Downshift>
   );
-};
+});
 
 export default Select;
