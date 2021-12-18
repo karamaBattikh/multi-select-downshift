@@ -18,13 +18,13 @@ function App() {
   const [products, setProducts] = useState<ItemType[]>([]);
   console.log("---products----", products);
 
-  const itemToString = (item: ItemType) => (item ? item.value : "");
+  const itemToString = (item: ItemType) => (item ? item.label : "");
 
   const handleChange = (selectedItems: ItemType[]) => {
     console.log({ selectedItems });
     setProducts(selectedItems);
   };
-  
+
   return (
     <div className="App">
       <Select
@@ -38,4 +38,3 @@ function App() {
 }
 
 export default App;
- 

@@ -1,14 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
 import Downshift from "downshift";
+import clsx from 'clsx';
 
 import './select.css'
 
 export type ItemType = {
-    label: string
-    value: string
+  label: string
+  value: string
 }
 
-interface SelectProps  {
+interface SelectProps {
   items: ItemType[]
   itemSelected?: ItemType[]
   onChange?: (selectedItems: ItemType[]) => void;
@@ -17,25 +18,24 @@ interface SelectProps  {
 
 
 const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: SelectProps) => {
-  const [selectedItems, setSelectedItems] = useState<ItemType[]>(itemSelected|| []);
-  
+  const [selectedItems, setSelectedItems] = useState<ItemType[]>(itemSelected || []);
+
   const ref = useRef(null);
 
- 
- 
+
   const getItems = (value: string) =>
-  value ? 
+    value ?
       items.filter(
         item =>
           selectedItems.indexOf(item) < 0 &&
           item?.label?.toLowerCase().startsWith(value.toLowerCase()),
-      ) :  items
+      ) : items
 
 
   useEffect(() => {
-      if(onChange && selectedItems) {
+    if (onChange && selectedItems) {
       onChange(selectedItems || []);
-  }
+    }
   }, [selectedItems]);
 
   const stateReducer = (state: any, changes: any) => {
@@ -48,22 +48,24 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
           isOpen: true,
           inputValue: ""
         };
+      case Downshift.stateChangeTypes.blurInput:
+        return { inputValue: "" }
       default:
         return changes;
     }
   };
 
   const removeItem = (item: ItemType) => {
- 
+
     setSelectedItems((prevState) => prevState.filter((i) => i !== item));
   };
 
-  const addSelectedItem = (item:ItemType) => {
- 
+  const addSelectedItem = (item: ItemType) => {
+
     setSelectedItems((prevState) => [...prevState, item]);
   };
 
-  const handleSelection = (selectedItem:any) => {
+  const handleSelection = (selectedItem: any) => {
     if (selectedItems.includes(selectedItem)) {
       removeItem(selectedItem);
     } else {
@@ -71,10 +73,10 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
     }
   };
 
-  const getRemoveButtonProps = ({ onClick, item ,...props } : {item: ItemType, onClick?: any}) => {
+  const getRemoveButtonProps = ({ onClick, item, ...props }: { item: ItemType, onClick?: any }) => {
     return {
       onClick: (e: any) => {
-         onClick && onClick(e);
+        onClick && onClick(e);
         e.stopPropagation();
         removeItem(item);
       },
@@ -91,7 +93,7 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
       selectedItem={null}
     >
       {({
-        getInputProps, 
+        getInputProps,
         getToggleButtonProps,
         getMenuProps,
         isOpen,
@@ -100,25 +102,15 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
         highlightedIndex,
         toggleMenu
       }) => (
-        <div className="selectStyle">
-          {selectedItems &&
-            selectedItems.length > 0 &&
-            selectedItems.map((item) => (
-              <li key={item.value}>
-                <div>
-                  <span>{item.label}</span>
-                  <button {...getRemoveButtonProps({ item })}>𝘅</button>
-                </div>
-              </li>
-            ))}
+        <div className='select__wrapper'>
           <div className="select">
             <div
-            className="select__input"
-            role='button'
-            onClick={() => {
-              toggleMenu(); 
-            }} 
-             >
+              className="select__input"
+              role='button'
+              onClick={() => {
+                toggleMenu();
+              }}
+            >
               <input
                 {...getInputProps({ ref: ref })}
                 placeholder={
@@ -127,31 +119,46 @@ const Select = ({ onChange, items, itemSelected = [], itemToString, ...rest }: S
                     : ""
                 }
               />
-            <button
-              {...getToggleButtonProps({
-                onClick(event) {
-                  event.stopPropagation();
-                }
-              })}
-            >
-            {isOpen ? 'X' : '+'}
-            </button>
-          </div>
+              <button
+                {...getToggleButtonProps({
+                  onClick(event) {
+                    event.stopPropagation();
+                  }
+                })}
+              >
+                {isOpen ? <>&#11165;</> : <>&#11167;</>}
+              </button>
+            </div>
 
-          <ul className='select__options' {...getMenuProps({ open: isOpen })}> 
-            {isOpen
-              ? getItems(inputValue || '')?.map((item, index) => (
+            <ul className='select__options' {...getMenuProps({ open: isOpen })}>
+              {isOpen
+                && getItems(inputValue || '')?.map((item, index) => (
                   <li
-                    key={item.value}
-                    {...getItemProps({ item, index, open: isOpen})}
+                    className={clsx(
+                      "option",
+                      highlightedIndex === index && "option-active",
+                      selectedItems.includes(item) && "option-selected"
+                    )}
+                    key={`option-${item.value}`}
+                    {...getItemProps({ item, index })}
                   >
                     {item.label}
                   </li>
-                ))
-              : null}
-          </ul>
+                ))}
+            </ul>
+          </div>
+          {selectedItems &&
+            selectedItems.length > 0 &&
+            <ul className="selected">
+              {selectedItems.map((item) => (
+                <li className="selected__item" key={`selected-${item.value}`}>
+                  <span>{item.label}</span>
+                  <button {...getRemoveButtonProps({ item })}> &#10005;</button>
+                </li>
+              ))}
+            </ul>
+          }
         </div>
-      </div>
       )}
     </Downshift>
   );
