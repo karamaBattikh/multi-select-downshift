@@ -1,56 +1,66 @@
+import React from 'react';
+import { useForm, Controller } from 'react-hook-form';
 
-import React from "react";
-import { useForm, Controller } from "react-hook-form";
-
-import Select, { ItemType } from './component/select'
+import Select, { ItemType } from './component/select';
+import { list, list2 } from './data';
 
 import './app.css';
 
-const list = [
-  { label: "option01", value: "01" },
-  { label: "option02", value: "02" },
-  { label: "option03", value: "03" },
-  { label: "option04", value: "04" },
-  { label: "option05", value: "05" },
-  { label: "option06", value: "06" }
-];
-
-const prepareData = (list: any[]): ItemType[] => list?.map((item: any) => ({ label: item?.label, value: item?.value })) || []
+const prepareData = (list: any[]): ItemType[] =>
+  list?.map((item: any) => ({ label: item?.label, value: item?.value })) || [];
 
 type FormType = {
-  products: ItemType[]
-}
+  options: ItemType[];
+  option: ItemType[];
+};
 
 function App() {
   const { handleSubmit, control } = useForm<FormType>({
     defaultValues: {
-      products: [list[0], list[3]] || []
-    }
+      options: [list[1], list[3]] || [],
+      option: [list2[1]] || [],
+    },
   });
 
-  const itemToString = (item: ItemType) => (item ? item.value : "");
+  const itemToString = (item: ItemType) => (item ? item.value : '');
 
   const onSubmit = (values: FormType) => console.log('*-values-*', values);
 
   return (
     <div className="App">
       <form onSubmit={handleSubmit(onSubmit)}>
-
-        <Controller
-          name="products"
-          control={control}
-          defaultValue={[list[0], list[3]]}
-          render={
-            ({ field: { onChange, value } }) =>
+        <div className="select_multiple">
+          <h2>Select Multiple Item</h2>
+          <Controller
+            name="options"
+            control={control}
+            render={({ field: { onChange, value } }) => (
               <Select
                 items={prepareData(list) || []}
+                isMultiple
                 onChange={onChange}
                 itemSelected={prepareData(value) || []}
                 itemToString={itemToString}
               />
-          }
-        />
-
+            )}
+          />
+        </div>
+        <hr />
+        <div className="select_one">
+          <h2>Select One Item</h2>
+          <Controller
+            name="option"
+            control={control}
+            render={({ field: { onChange, value } }) => (
+              <Select
+                items={prepareData(list2) || []}
+                onChange={onChange}
+                itemSelected={value || []}
+                itemToString={itemToString}
+              />
+            )}
+          />
+        </div>
         <input type="submit" />
       </form>
     </div>
